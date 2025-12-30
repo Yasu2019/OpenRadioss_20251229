@@ -224,7 +224,7 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
                 f.write(f"{nid:10d}" + ("\n" if (i+1)%10==0 else ""))
             f.write("\n")
             
-        f.write("/FUNCT/1\nVelocity_Ramp\n#                  X                   Y\n             0.00000             0.00000\n             0.00100            -0.33300\n             0.05000            -0.33300\n")
+        f.write("/FUNCT/1\nVelocity_Ramp\n#                  X                   Y\n             0.00000             0.00000\n             0.00500            -0.33300\n             0.05000            -0.33300\n")
         if punch_nodes:
             f.write("/IMPVEL/1\nPunch_Velocity\n#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe\n         1         Z         0         0       100         0         0\n#             Ascale_x            Fscale_y            Tstart              Tstop\n             1.00000             1.00000             0.00000         1.00000E+30\n")
         
