@@ -9764,18 +9764,11 @@ S185_Steel
            2700.0
 #                  E                  NU
           6.9E+10               0.33
-#                  a                   b                   n           EPS_p_max               c
-          1.1E+08           1.5E+08                0.20                 0.0                0.0
+#                  a                   b                   n           EPS_p_max               Xmax
+          1.1E+08           1.5E+08                0.20               1.0               0.5
                  0.0                 0.0                 0.0                 0.0                 0.0
                  0.0                 0.0                 0.0                 0.0                 0.0
                  0.0                 0.0                 0.0                 0.0                 0.0
-/FAIL/BIQUAD/1
-#  Ifail_sh   Ifail_so
-         1         1
-#          Eps_p_max           Eps_t_max           Eps_m_max               d_max
-             0.15000             0.20000             0.30000             0.00000
-#     Dadv      Nmax
-         1         1
 /PROP/SOLID/1
 #   Isolid    Ismstr                               Dn                Qa                Hm
         14         4             0.00000             0.00000             0.50000

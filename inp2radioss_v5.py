@@ -139,13 +139,16 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
         f.write("/MAT/LAW1/1\nS185_Steel\n#              RHO_I\n           7800.0\n#                  E                  NU\n          2.1E+11               0.28\n")
         f.write("                   0                   0                   0                   0                   0\n")
         
-        f.write("/MAT/LAW2/2\n1060_Alloy_Plastic\n#              RHO_I\n           2700.0\n#                  E                  NU\n          6.9E+10               0.33\n")
-        f.write("#                  a                   b                   n           EPS_p_max               c\n          1.1E+08           1.5E+08                0.20                 0.0                0.0\n")
+        # LAW2 (Elasto-Plastic) for 1060 Aluminum Alloy with element deletion
+        # A (Sigma_y) = 110 MPa, B (E_tan) = 150 MPa, Xmax = 0.5 (50% plastic strain for deletion)
+        f.write("/MAT/LAW2/2\n1060_Alloy_Plastic\n")
+        f.write("#              RHO_I\n           2700.0\n")
+        f.write("#                  E                  NU\n          6.9E+10               0.33\n")
+        f.write("#                  a                   b                   n           EPS_p_max               Xmax\n")
+        f.write("          1.1E+08           1.5E+08                0.20               1.0               0.5\n")
         f.write("                 0.0                 0.0                 0.0                 0.0                 0.0\n")
         f.write("                 0.0                 0.0                 0.0                 0.0                 0.0\n")
         f.write("                 0.0                 0.0                 0.0                 0.0                 0.0\n")
-        
-        f.write("/FAIL/BIQUAD/1\n#  Ifail_sh   Ifail_so\n         1         1\n#          Eps_p_max           Eps_t_max           Eps_m_max               d_max\n             0.15000             0.20000             0.30000             0.00000\n#     Dadv      Nmax\n         1         1\n")
         
         f.write("/PROP/SOLID/1\n#   Isolid    Ismstr                               Dn                Qa                Hm\n        14         4             0.00000             0.00000             0.50000\n")
         f.write("                   0                   0                   0                   0                   0\n")
@@ -252,7 +255,15 @@ def write_engine_file(output_path):
     print(f"Writing Engine: {output_path}")
     with open(output_path, 'w') as f:
         f.write("/RUN/Punch_Die_Shearing/1\n             0.0200000000\n/RFILE/5000\n/ANIM/DT\n             0.0000000000         5.00000E-04\n")
-        f.write("/ANIM/ELEM/EPSP\n/ANIM/ELEM/VONM\n/ANIM/ELEM/ENER\n/ANIM/VECT/DISP\n/ANIM/VECT/VEL\n/END\n")
+        f.write("/ANIM/ELEM/EPSP\n/ANIM/ELEM/VONM\n/ANIM/ELEM/ENER\n")
+        # Stress components for η, Lode, σ1 calculation in post-processing
+        f.write("/ANIM/ELEM/SIGX\n")
+        f.write("/ANIM/ELEM/SIGY\n")
+        f.write("/ANIM/ELEM/SIGZ\n")
+        f.write("/ANIM/ELEM/SIGXY\n")
+        f.write("/ANIM/ELEM/SIGYZ\n")
+        f.write("/ANIM/ELEM/SIGZX\n")
+        f.write("/ANIM/VECT/DISP\n/ANIM/VECT/VEL\n/END\n")
 
 def main():
     inp_path = r"C:\Users\mhn15\dynamic_20251218\Rev01_Punch_Die_1Piece_Material_20251229.inp"
