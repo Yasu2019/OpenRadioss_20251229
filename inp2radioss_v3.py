@@ -73,6 +73,116 @@ def parse_inp_file(inp_path):
     return nodes, elements, elset_elements
 
 
+def extract_surface_faces(all_elements, part_element_ids, nodes_coords):
+    """
+    Extract external faces of TETRA4 elements for a given part.
+    Ensures correct normal direction (pointing outward).
+    """
+    # Count face occurrences
+    face_counts = {}  # {tuple(sorted_nodes): count}
+    face_to_elem = {} # {tuple(sorted_nodes): elem_id}
+    
+    # TETRA4 faces (node indices 1-based to 0-based: 0,1,2,3)
+    # Faces defined by node indices in element connectivity
+    # Face 1: n1, n2, n3 (opposite to n4)
+    # Face 2: n1, n4, n2 (opposite to n3)
+    # Face 3: n2, n4, n3 (opposite to n1)
+    # Face 4: n3, n4, n1 (opposite to n2)
+    # Correct winding for outward normal is counter-clockwise looking from outside
+    
+    tetra_faces_idx = [
+        [0, 2, 1], # n1, n3, n2 - Check winding later
+        [0, 1, 3], # n1, n2, n4
+        [1, 2, 3], # n2, n3, n4
+        [2, 0, 3]  # n3, n1, n4
+    ]
+    
+    for eid in part_element_ids:
+        if eid not in all_elements:
+            continue
+        ns = all_elements[eid] # [n1, n2, n3, n4]
+        
+        # Check all 4 faces
+        faces = [
+            tuple(sorted([ns[0], ns[2], ns[1]])),
+            tuple(sorted([ns[0], ns[1], ns[3]])),
+            tuple(sorted([ns[1], ns[2], ns[3]])),
+            tuple(sorted([ns[2], ns[0], ns[3]]))
+        ]
+        
+        for face in faces:
+            if face in face_counts:
+                face_counts[face] += 1
+            else:
+                face_counts[face] = 1
+                face_to_elem[face] = eid
+
+    # Identify external faces (count == 1)
+    external_faces = []
+    
+    for face_key, count in face_counts.items():
+        if count == 1:
+            # Determine correct node order for outward normal
+            eid = face_to_elem[face_key]
+            ns = all_elements[eid]
+            
+            # Identify which nodes constitute the face
+            # And which node is the 'opposite' node (internal node)
+            face_set = set(face_key)
+            all_set = set(ns)
+            opp_node_list = list(all_set - face_set)
+            
+            if not opp_node_list:
+                continue # Should not happen for valid tet
+            
+            opp_node = opp_node_list[0]
+            
+            # Get coordinates
+            p1 = nodes_coords[face_key[0]]
+            p2 = nodes_coords[face_key[1]]
+            p3 = nodes_coords[face_key[2]]
+            p_opp = nodes_coords[opp_node]
+            
+            # Vector calculation for normal
+            # v1 = p2 - p1, v2 = p3 - p1
+            v1 = (p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2])
+            v2 = (p3[0]-p1[0], p3[1]-p1[1], p3[2]-p1[2])
+            
+            # Normal = v1 x v2
+            nx = v1[1]*v2[2] - v1[2]*v2[1]
+            ny = v1[2]*v2[0] - v1[0]*v2[2]
+            nz = v1[0]*v2[1] - v1[1]*v2[0]
+            
+            # Vector to opposite node: v_opp = p_opp - p1
+            vx_opp = p_opp[0] - p1[0]
+            vy_opp = p_opp[1] - p1[1]
+            vz_opp = p_opp[2] - p1[2]
+            
+            # Dot product
+            dot = nx*vx_opp + ny*vy_opp + nz*vz_opp
+            
+            # If dot > 0, normal points TOWARDS opposite node (Internal).
+            # We want normal pointing OUTWARD (away from opposite node).
+            # So if dot > 0, flip winding (swap p2 and p3).
+            
+            if dot > 0:
+                final_face = [face_key[0], face_key[2], face_key[1]]
+            else:
+                final_face = [face_key[0], face_key[1], face_key[2]]
+                
+                
+            external_faces.append(final_face)
+            
+    # Validate faces
+    valid_faces = []
+    for face in external_faces:
+        if 0 in face:
+            print(f"WARNING: Face with node 0 detected and removed: {face}")
+        else:
+            valid_faces.append(face)
+            
+    return valid_faces
+
 def write_starter_file(output_path, nodes, elements, elset_elements):
     """Write OpenRadioss Starter file with correct part assignments."""
     print(f"Writing Starter: {output_path}")
@@ -142,6 +252,13 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
     print(f"  Punch: {len(parts.get(1, {}).get('elements', []))} elements, {len(punch_nodes)} nodes")
     print(f"  Material: {len(parts.get(2, {}).get('elements', []))} elements, {len(material_nodes)} nodes")
     print(f"  Die: {len(parts.get(3, {}).get('elements', []))} elements, {len(die_nodes)} nodes")
+    
+    # Extract surfaces for contact
+    print("  Extracting surface faces...")
+    punch_faces = extract_surface_faces(elements, parts.get(1, {}).get('elements', []), nodes)
+    material_faces = extract_surface_faces(elements, parts.get(2, {}).get('elements', []), nodes)
+    die_faces = extract_surface_faces(elements, parts.get(3, {}).get('elements', []), nodes)
+    print(f"  Surface faces extracted: Punch={len(punch_faces)}, Material={len(material_faces)}, Die={len(die_faces)}")
     
     with open(output_path, 'w') as f:
         # Header
@@ -260,10 +377,50 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
             f.write("#             Ascale_x            Fscale_y            Tstart              Tstop\n")
             f.write(f"{1.0:20.5f}{1.0:20.5f}{0.0:20.5f}{1E30:20.5E}\n")
         
-        # NOTE: Contact disabled temporarily for testing basic BC
-        # TYPE7 with /SURF/PART is not compatible with TETRA4 solid elements
-        # For solid element contact, use /INTER/TYPE25 instead
-        # TODO: Implement TYPE25 contact after verifying basic BC behavior
+        # Surface definitions using /SURF/SEG (explicit segments for solid contact)
+        
+        # Surface for Punch (Extracted faces)
+        if punch_faces:
+            f.write("/SURF/SEG/300\n")
+            f.write("Punch_Surface\n")
+            for face in punch_faces:
+                f.write(f"{face[0]:10d}{face[1]:10d}{face[2]:10d}{0:10d}\n")
+
+        # Surface for Material (Extracted faces)
+        if material_faces:
+            f.write("/SURF/SEG/400\n")
+            f.write("Material_Surface\n")
+            for face in material_faces:
+                f.write(f"{face[0]:10d}{face[1]:10d}{face[2]:10d}{0:10d}\n")
+
+        # Surface for Die (Extracted faces)
+        if die_faces:
+            f.write("/SURF/SEG/500\n")
+            f.write("Die_Surface\n")
+            for face in die_faces:
+                f.write(f"{face[0]:10d}{face[1]:10d}{face[2]:10d}{0:10d}\n")
+        
+        # Contact 1: Punch-Material (Surface 400 slave, Surface 300 master)
+        if punch_faces and material_faces:
+            f.write("/INTER/TYPE7/1\n")
+            f.write("Punch_Material_Contact\n")
+            f.write("#   Slav_id    Mast_id       Istf       Ithe       Igap       Ibag       Idel      Icurv\n")
+            f.write(f"{400:10d}{300:10d}{4:10d}{0:10d}{2:10d}{0:10d}{1:10d}{0:10d}\n")
+            f.write("#               Fric            Gap_min            Gapmax            Tstart             Tstop\n")
+            f.write(f"{0.10:20.5f}{0.0001:20.5f}{1.0:20.5f}{0.0:20.5f}{1E30:20.5E}\n")
+            f.write("#              Stfac            Fpenmax               I_BC             Iform\n")
+            f.write(f"{100.0:20.5f}{0.0:20.5f}{0:10d}{0:10d}\n")
+        
+        # Contact 2: Die-Material (Surface 400 slave, Surface 500 master)
+        if die_faces and material_faces:
+            f.write("/INTER/TYPE7/2\n")
+            f.write("Die_Material_Contact\n")
+            f.write("#   Slav_id    Mast_id       Istf       Ithe       Igap       Ibag       Idel      Icurv\n")
+            f.write(f"{400:10d}{500:10d}{4:10d}{0:10d}{2:10d}{0:10d}{1:10d}{0:10d}\n")
+            f.write("#               Fric            Gap_min            Gapmax            Tstart             Tstop\n")
+            f.write(f"{0.10:20.5f}{0.0001:20.5f}{1.0:20.5f}{0.0:20.5f}{1E30:20.5E}\n")
+            f.write("#              Stfac            Fpenmax               I_BC             Iform\n")
+            f.write(f"{100.0:20.5f}{0.0:20.5f}{0:10d}{0:10d}\n")
         
         # Mass scaling
         f.write("/DT/NODA/CST\n")
@@ -301,12 +458,12 @@ def main():
     inp_path = r"C:\Users\mhn15\dynamic_20251218\Rev01_Punch_Die_1Piece_Material_20251229.inp"
     
     output_dir = r"C:\Users\mhn15\dynamic_20251218"
-    base_name = "Punch_Die_Shearing_v3"
+    base_name = "Punch_Die_Shearing_v4"
     starter_path = os.path.join(output_dir, f"{base_name}_0000.rad")
     engine_path = os.path.join(output_dir, f"{base_name}_0001.rad")
     
     print(f"\n{'='*60}")
-    print("Calculix to OpenRadioss Converter V3")
+    print("Calculix to OpenRadioss Converter V3 (with Contact V4)")
     print("Model: Punch (1 part) + Material (2 merged) + Die (1 part)")
     print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"{'='*60}\n")

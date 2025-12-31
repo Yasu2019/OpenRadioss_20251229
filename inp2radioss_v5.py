@@ -215,7 +215,8 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
             for i, nid in enumerate(sorted(die_nodes)):
                 f.write(f"{nid:10d}" + ("\n" if (i+1)%10==0 else ""))
             f.write("\n")
-            f.write("/BCS/100\nDie_Fixed\n#  Tra_rot       Skew_ID   Gnod_ID\n       111         0       200\n")
+            # Using IMPVEL with zero velocity instead of BCS for Die (more reliable)
+            pass  # BCS removed, using IMPVEL instead
 
         # Material Skin Nodes Group (Slave) - ID 400
         if material_skin_nodes:
@@ -224,9 +225,19 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
                 f.write(f"{nid:10d}" + ("\n" if (i+1)%10==0 else ""))
             f.write("\n")
             
+        # Velocity functions
         f.write("/FUNCT/1\nVelocity_Ramp\n#                  X                   Y\n             0.00000             0.00000\n             0.00500            -0.33300\n             0.05000            -0.33300\n")
+        f.write("/FUNCT/2\nZero_Velocity\n#                  X                   Y\n             0.00000             0.00000\n             0.10000             0.00000\n")
+        
+        # Punch velocity (Z direction, moving down)
         if punch_nodes:
             f.write("/IMPVEL/1\nPunch_Velocity\n#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe\n         1         Z         0         0       100         0         0\n#             Ascale_x            Fscale_y            Tstart              Tstop\n             1.00000             1.00000             0.00000         1.00000E+30\n")
+        
+        # Die fixed in all directions using zero velocity
+        if die_nodes:
+            f.write("/IMPVEL/2\nDie_Fixed_X\n#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe\n         2         X         0         0       200         0         0\n#             Ascale_x            Fscale_y            Tstart              Tstop\n             1.00000             1.00000             0.00000         1.00000E+30\n")
+            f.write("/IMPVEL/3\nDie_Fixed_Y\n#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe\n         2         Y         0         0       200         0         0\n#             Ascale_x            Fscale_y            Tstart              Tstop\n             1.00000             1.00000             0.00000         1.00000E+30\n")
+            f.write("/IMPVEL/4\nDie_Fixed_Z\n#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe\n         2         Z         0         0       200         0         0\n#             Ascale_x            Fscale_y            Tstart              Tstop\n             1.00000             1.00000             0.00000         1.00000E+30\n")
         
         # Contact using Slave Node Group 400 and Master Surfaces 300/500
         if punch_faces and material_faces:
@@ -240,7 +251,7 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
 def write_engine_file(output_path):
     print(f"Writing Engine: {output_path}")
     with open(output_path, 'w') as f:
-        f.write("/RUN/Punch_Die_Shearing/1\n             0.0200000000\n/ANIM/DT\n             0.0000000000         5.00000E-04\n")
+        f.write("/RUN/Punch_Die_Shearing/1\n             0.0200000000\n/RFILE/5000\n/ANIM/DT\n             0.0000000000         5.00000E-04\n")
         f.write("/ANIM/ELEM/EPSP\n/ANIM/ELEM/VONM\n/ANIM/ELEM/ENER\n/ANIM/VECT/DISP\n/ANIM/VECT/VEL\n/END\n")
 
 def main():

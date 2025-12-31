@@ -1,0 +1,27 @@
+
+============================================================
+Calculix to OpenRadioss Converter V3 (with Contact V4)
+Model: Punch (1 part) + Material (2 merged) + Die (1 part)
+Date: 2025-12-30 09:37:29
+============================================================
+
+Parsing: C:\Users\mhn15\dynamic_20251218\Rev01_Punch_Die_1Piece_Material_20251229.inp
+  Nodes: 9744
+  Elements: 46081
+  Element Sets: ['Solid_part-1', 'Solid_part-5', 'Solid_part-6', 'Solid_part-4']
+Writing Starter: C:\Users\mhn15\dynamic_20251218\Punch_Die_Shearing_v4_0000.rad
+  Punch: 185 elements, 89 nodes
+  Material: 45343 elements, 9406 nodes
+  Die: 553 elements, 245 nodes
+  Extracting surface faces...
+  Surface faces extracted: Punch=172, Material=6520, Die=490
+  Starter file written successfully
+Writing Engine: C:\Users\mhn15\dynamic_20251218\Punch_Die_Shearing_v4_0001.rad
+  Engine file written: 20ms simulation, 0.5ms animation interval
+
+============================================================
+Conversion complete!
+Starter: C:\Users\mhn15\dynamic_20251218\Punch_Die_Shearing_v4_0000.rad
+Engine:  C:\Users\mhn15\dynamic_20251218\Punch_Die_Shearing_v4_0001.rad
+============================================================
+

@@ -63130,10 +63130,6 @@ Die_Nodes
       9716      9717      9718      9719      9720      9721      9722      9723      9724      9725
       9726      9727      9728      9729      9730      9731      9732      9733      9734      9735
       9736      9737      9738      9739      9740
-/BCS/100
-Die_Fixed
-#  Tra_rot       Skew_ID   Gnod_ID
-       111         0       200
 /GRNOD/NODE/400
 Material_Skin_Nodes
         90        91        92        93        94        95        96        97        98        99
@@ -63469,10 +63465,33 @@ Velocity_Ramp
              0.00000             0.00000
              0.00500            -0.33300
              0.05000            -0.33300
+/FUNCT/2
+Zero_Velocity
+#                  X                   Y
+             0.00000             0.00000
+             0.10000             0.00000
 /IMPVEL/1
 Punch_Velocity
 #   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe
          1         Z         0         0       100         0         0
+#             Ascale_x            Fscale_y            Tstart              Tstop
+             1.00000             1.00000             0.00000         1.00000E+30
+/IMPVEL/2
+Die_Fixed_X
+#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe
+         2         X         0         0       200         0         0
+#             Ascale_x            Fscale_y            Tstart              Tstop
+             1.00000             1.00000             0.00000         1.00000E+30
+/IMPVEL/3
+Die_Fixed_Y
+#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe
+         2         Y         0         0       200         0         0
+#             Ascale_x            Fscale_y            Tstart              Tstop
+             1.00000             1.00000             0.00000         1.00000E+30
+/IMPVEL/4
+Die_Fixed_Z
+#   Funct_ID    Dir   Skew_ID   Sens_ID   Gnod_ID     Icoor    Iframe
+         2         Z         0         0       200         0         0
 #             Ascale_x            Fscale_y            Tstart              Tstop
              1.00000             1.00000             0.00000         1.00000E+30
 /INTER/TYPE7/1

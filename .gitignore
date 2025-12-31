@@ -1,0 +1,17 @@
+# OpenRadioss Output Files
+*.A[0-9]*
+*.T[0-9]*
+*.rst
+*.h3d
+*.out
+*.vtk
+*.anim
+
+# Temporary Files
+*.tmp
+*.bak
+*.log
+
+# Large Binary Files
+*.stl
+*.rst
