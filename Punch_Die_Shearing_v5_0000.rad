@@ -63512,5 +63512,5 @@ Die_Material_Contact
              100.000             0.00000         0         0
 /DT/NODA/CST
 #               Tmin            Tscale
-         5.0E-08             0.90000
+         1.0E-07             0.90000
 /END

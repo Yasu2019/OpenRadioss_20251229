@@ -246,7 +246,7 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
         if die_faces and material_faces:
             f.write("/INTER/TYPE7/2\nDie_Material_Contact\n#   Slav_id    Mast_id       Istf       Ithe       Igap       Ibag       Idel      Icurv\n       400       500         4         0         2         0         1         0\n#               Fric            Gap_min            Gapmax            Tstart             Tstop\n             0.10000             0.00010             1.00000             0.00000         1.00000E+30\n#              Stfac            Fpenmax               I_BC             Iform\n             100.000             0.00000         0         0\n")
 
-        f.write("/DT/NODA/CST\n#               Tmin            Tscale\n         5.0E-08             0.90000\n/END\n")
+        f.write("/DT/NODA/CST\n#               Tmin            Tscale\n         1.0E-07             0.90000\n/END\n")
 
 def write_engine_file(output_path):
     print(f"Writing Engine: {output_path}")
