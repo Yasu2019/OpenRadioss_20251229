@@ -267,9 +267,9 @@ def write_starter_file(output_path, nodes, elements, elset_elements):
         
         # AMS (Advanced Mass Scaling) for fine blanking
         # Note: /AMS is recognized by Starter, but /DT/AMS not supported in OSS Engine
-        # Using aggressive Mass Scaling (Tmin=7E-7) for ~5 hour run time
+        # Using aggressive Mass Scaling (Tmin=1E-6) for ~5 hour run time with Sol2SPH
         f.write("/AMS\n")
-        f.write("/DT/NODA/CST\n#               Tmin            Tscale\n         7.0E-07             0.90000\n/END\n")
+        f.write("/DT/NODA/CST\n#               Tmin            Tscale\n         1.0E-06             0.90000\n/END\n")
 
 def write_engine_file(output_path):
     print(f"Writing Engine: {output_path}")
