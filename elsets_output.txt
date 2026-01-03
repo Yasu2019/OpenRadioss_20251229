@@ -1,0 +1,6 @@
+Line 22686: *Element, Type=C3D4, Elset=Solid_part-Punch_Hole
+Line 22860: *Element, Type=C3D4, Elset=Solid_part-Punch_Trim
+Line 24568: *Element, Type=C3D4, Elset=From_parts-Material
+Line 96204: *Element, Type=C3D4, Elset=From_parts-Stripper
+Line 102044: *Element, Type=C3D4, Elset=From_parts-Die
+Line 107936: *Element, Type=C3D4, Elset=From_parts-Punch_Rectangle

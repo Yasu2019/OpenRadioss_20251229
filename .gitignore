@@ -1,0 +1,15 @@
+# Radioss Ignore
+*.rst
+*_0000.rad
+*_0001.rad
+# Keep .out files for logs
+# *.out
+# Keep VTK for visualization references
+# *.vtk
+# Keep Animation binaries if small enough (they are 9MB, acceptable)
+# *.A*
+
+# Temp files
+*.tmp
+*.bak
+__pycache__/
